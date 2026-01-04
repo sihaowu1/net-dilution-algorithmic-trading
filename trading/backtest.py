@@ -134,3 +134,4 @@ def plot_performance_comparison(df, sp500_df, ticker_name):
     
     plt.tight_layout()
     plt.show()
+    return fig
