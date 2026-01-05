@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import yfinance as yf
 from datetime import datetime
 import matplotlib.pyplot as plt
@@ -75,22 +76,26 @@ def plot_positions(df, ticker_name):
     plt.show()
 
 def plot_performance_comparison(df, sp500_df, ticker_name):
-    """Plot cumulative returns comparison with long/short action markers."""
-    fig, ax = plt.subplots(figsize=(14, 8))
+    """Plot cumulative returns comparison with long/short action markers and position over time."""
+    fig = plt.figure(figsize=(18, 8))
+    
+    # Create two subplots side by side
+    ax1 = plt.subplot(1, 2, 1)  # Left plot: performance comparison
+    ax2 = plt.subplot(1, 2, 2)  # Right plot: position over time
     
     df['date_dt'] = pd.to_datetime(df['date'])
     sp500_df['date_dt'] = pd.to_datetime(sp500_df['date'])
     
     # Plot strategy returns
-    ax.plot(df['date_dt'], df['cumulative_strategy_return'] * 100, 
+    ax1.plot(df['date_dt'], df['cumulative_strategy_return'] * 100, 
             linewidth=2.5, label=f'{ticker_name} Strategy', marker='o', markersize=6)
     
     # Plot buy-and-hold returns
-    ax.plot(df['date_dt'], df['cumulative_market_return'] * 100, 
+    ax1.plot(df['date_dt'], df['cumulative_market_return'] * 100, 
             linewidth=2.5, label=f'{ticker_name} Buy & Hold', marker='s', markersize=6)
     
     # Plot S&P 500 returns
-    ax.plot(sp500_df['date_dt'], sp500_df['sp500_cumulative_return'] * 100, 
+    ax1.plot(sp500_df['date_dt'], sp500_df['sp500_cumulative_return'] * 100, 
             linewidth=2, label='S&P 500', alpha=0.8)
     
     # Detect position changes and mark long/short entries
@@ -113,24 +118,68 @@ def plot_performance_comparison(df, sp500_df, ticker_name):
     
     # Mark long entries with green upward triangles
     if len(long_entries) > 0:
-        ax.scatter(long_entries['date_dt'], 
+        ax1.scatter(long_entries['date_dt'], 
                   long_entries['cumulative_strategy_return'] * 100,
                   marker='^', s=150, color='green', zorder=5, 
                   label='Long Entry', edgecolors='darkgreen', linewidths=1.5)
     
     # Mark short entries with red downward triangles
     if len(short_entries) > 0:
-        ax.scatter(short_entries['date_dt'], 
+        ax1.scatter(short_entries['date_dt'], 
                   short_entries['cumulative_strategy_return'] * 100,
                   marker='v', s=150, color='red', zorder=5, 
                   label='Short Entry', edgecolors='darkred', linewidths=1.5)
     
-    ax.set_xlabel('Date', fontsize=12)
-    ax.set_ylabel('Cumulative Return (%)', fontsize=12)
-    ax.set_title(f'{ticker_name} Strategy Performance vs S&P 500', fontsize=14, fontweight='bold')
-    ax.grid(True, alpha=0.3)
-    ax.legend(fontsize=11)
-    ax.axhline(y=0, color='black', linestyle='--', alpha=0.5)
+    ax1.set_xlabel('Date', fontsize=12)
+    ax1.set_ylabel('Cumulative Return (%)', fontsize=12)
+    ax1.set_title(f'{ticker_name} Strategy Performance vs S&P 500', fontsize=14, fontweight='bold')
+    ax1.grid(True, alpha=0.3)
+    ax1.legend(fontsize=11)
+    ax1.axhline(y=0, color='black', linestyle='--', alpha=0.5)
+    
+    # Plot position over time with improved styling
+    dates = df_sorted['date_dt'].values
+    positions = df_sorted['position'].values
+    
+    # Define colors for each position type (more vibrant and distinct)
+    color_long = '#2ecc71'    # Green for long positions
+    color_short = '#e74c3c'    # Red for short positions
+    
+    # Create separate fills for each position type for clean colored regions
+    # Fill long positions (1) - from 0 to 1
+    long_positions = np.where(positions == 1, positions, 0)
+    ax2.fill_between(dates, 0, long_positions, step='post', 
+                     alpha=0.5, color=color_long, edgecolor='none')
+    
+    # Fill short positions (-1) - from -1 to 0
+    short_positions = np.where(positions == -1, positions, 0)
+    ax2.fill_between(dates, short_positions, 0, step='post', 
+                     alpha=0.5, color=color_short, edgecolor='none')
+    
+    # Draw step line overlay for clarity with better styling
+    ax2.step(dates, positions, where='post', 
+            linewidth=2.5, color='#2c3e50', alpha=0.9, zorder=10)
+    
+    # Style the plot
+    ax2.set_xlabel('Date', fontsize=12, fontweight='medium')
+    ax2.set_ylabel('Position', fontsize=12, fontweight='medium')
+    ax2.set_title(f'{ticker_name} Position Over Time', fontsize=14, fontweight='bold', pad=15)
+    ax2.set_yticks([-1, 0, 1])
+    ax2.set_yticklabels(['Short (-1)', 'Neutral (0)', 'Long (+1)'], fontsize=11)
+    
+    # Improve grid styling
+    ax2.grid(True, alpha=0.2, linestyle='--', linewidth=0.8, axis='y')
+    ax2.grid(True, alpha=0.1, linestyle='-', linewidth=0.5, axis='x')
+    
+    # Add zero line for reference
+    ax2.axhline(y=0, color='black', linestyle='-', alpha=0.4, linewidth=1.2, zorder=5)
+    
+    # Improve axis limits for better appearance
+    ax2.set_ylim(-1.3, 1.3)
+    
+    # Format x-axis dates
+    ax2.tick_params(axis='x', labelsize=10)
+    ax2.tick_params(axis='y', labelsize=10)
     
     plt.tight_layout()
     plt.show()

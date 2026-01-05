@@ -20,14 +20,27 @@ def compute_net_dilution(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
+def zscore_normalize_net_dilution(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+
+    mean = df['net_dilution'].mean()
+    std = df['net_dilution'].std()
+    
+    if pd.isna(std) or std == 0:
+        df['normalized_net_dilution'] = 0.0
+    else:
+        df['normalized_net_dilution'] = (df['net_dilution'] - mean) / std
+    
+    return df
+
 def generate_signals(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df['position'] = 0
 
-    long_threshold  = 0.02
-    short_threshold = -0.04
+    long_threshold  = 0.05
+    short_threshold = 0.25
 
-    df.loc[df['net_dilution'].notna() & (df['net_dilution'] <= short_threshold), 'position'] = -1
-    df.loc[df['net_dilution'].notna() & (df['net_dilution'] >= long_threshold), 'position'] = 1
+    df.loc[df['net_dilution'].notna() & (df['normalized_net_dilution'] <= long_threshold), 'position'] = 1
+    df.loc[df['net_dilution'].notna() & (df['normalized_net_dilution'] >= short_threshold), 'position'] = -1
 
     return df
