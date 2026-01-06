@@ -1,14 +1,4 @@
 # Net Dilution Algorithmic Trading
-why topic is of interest
-
-hypothesis + relevant articles / theories
-
-experiment setup, which owuld include ur like moving avg stuff, functions, threshold determining stuff
-
-how ur things were tested, how far u backtested, what data was used, where data is from, which stocks, and why for all those
-
-results, analysis, future ideas or why this was a slop
-
 ## Why look into net dilution in tech companies?
 
 ```math
@@ -103,4 +93,6 @@ We observe that our long threshold works successfully, but our short threshold s
 
 However, a short threshold is not adequately determined, as a high net dilution can also mean a company is selling stocks to fund investments. This means we need another signal to confirm that net dilution is high due to poor financial condition, instead of allocating cash for investments. 
 
-We can say that the deadzone between 0.05 and 0.25 is successful as the algorithm remained neutral when SNOW dropped from 2021 Q4 to 2022 Q1. The next step would be to consider an long-only version of this strategy or adjust the short threshold. 
+We can say that the deadzone between 0.05 and 0.25 is successful as the algorithm remained neutral when SNOW dropped from 2021 Q4 to 2022 Q1. The next step would be to consider an long-only version of this strategy or quantitatively determine a short threshold. 
+
+This strategy has a clear tradeoff that is present in sudden quarterly changes. 10-K/10-Q are released after earnings, meaning that this strategy uses the most recent 10-K/10-Q to estimate net dilution using a TTM. If there were a sudden change such as COVID, then the strategy would fail. 

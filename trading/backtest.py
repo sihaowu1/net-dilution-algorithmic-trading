@@ -16,6 +16,17 @@ def calculate_strategy_returns(df, ticker_name):
         DataFrame with strategy returns and cumulative returns
     """
     df = df.copy()
+    
+    # Ensure required columns exist
+    if 'closing_price' not in df.columns or 'position' not in df.columns:
+        raise ValueError(f"DataFrame must contain 'closing_price' and 'position' columns")
+    
+    # Filter out rows with missing closing prices
+    df = df.dropna(subset=['closing_price']).copy()
+    
+    if len(df) == 0:
+        raise ValueError(f"No valid data rows found for {ticker_name}")
+    
     df = df.sort_values('date').reset_index(drop=True)
     
     # Calculate price returns (percent change)
@@ -28,12 +39,22 @@ def calculate_strategy_returns(df, ticker_name):
     df['strategy_return'] = df['position'] * df['price_return']
     
     # Calculate cumulative returns
-    df['cumulative_market_return'] = (1 + df['price_return']).cumprod() - 1
+    # Fill NaN values with 0 for the first row (no previous price)
+    df['cumulative_market_return'] = (1 + df['price_return'].fillna(0)).cumprod() - 1
     df['cumulative_strategy_return'] = (1 + df['strategy_return'].fillna(0)).cumprod() - 1
     
     return df
 
 def get_sp500_data(start_date, end_date):
+    # Ensure dates are in the correct format for yfinance
+    if isinstance(start_date, str):
+        start_date = pd.to_datetime(start_date)
+    if isinstance(end_date, str):
+        end_date = pd.to_datetime(end_date)
+    
+    # Add one day to end_date to ensure we get data up to that date
+    end_date = end_date + pd.Timedelta(days=1)
+    
     sp500 = yf.download(
         "^GSPC",
         start=start_date,
@@ -52,7 +73,7 @@ def get_sp500_data(start_date, end_date):
     sp500_df = sp500_df.rename(columns={"Date": "date"})  # yfinance uses "Date"
 
     sp500_df["sp500_return"] = sp500_df["sp500_price"].pct_change()
-    sp500_df["sp500_cumulative_return"] = (1 + sp500_df["sp500_return"]).cumprod() - 1
+    sp500_df["sp500_cumulative_return"] = (1 + sp500_df["sp500_return"].fillna(0)).cumprod() - 1
 
     return sp500_df
 
@@ -88,6 +109,12 @@ def plot_performance_comparison(df, sp500_df, ticker_name):
     df['date_dt'] = pd.to_datetime(df['date'])
     sp500_df['date_dt'] = pd.to_datetime(sp500_df['date'])
     
+    # Ensure we have valid data
+    if len(df) == 0:
+        raise ValueError(f"No data to plot for {ticker_name}")
+    if len(sp500_df) == 0:
+        raise ValueError(f"No S&P 500 data available for the date range")
+    
     # Plot strategy returns
     ax1.plot(df['date_dt'], df['cumulative_strategy_return'] * 100, 
             linewidth=2.5, label=f'{ticker_name} Strategy', marker='o', markersize=6)
@@ -103,32 +130,35 @@ def plot_performance_comparison(df, sp500_df, ticker_name):
     # Detect position changes and mark long/short entries
     df_sorted = df.sort_values('date_dt').reset_index(drop=True)
     df_sorted['position_shift'] = df_sorted['position'].shift(1)
+    # Shift cumulative return and date backward by 1 to get the values BEFORE the position change
+    df_sorted['cumulative_strategy_return_prev'] = df_sorted['cumulative_strategy_return'].shift(1)
+    df_sorted['date_dt_prev'] = df_sorted['date_dt'].shift(1)
     
     # Find entries into long positions (transition to 1)
     long_entries = df_sorted[
         (df_sorted['position'] == 1) & 
         (df_sorted['position_shift'] != 1) &
-        (df_sorted['cumulative_strategy_return'].notna())
+        (df_sorted['cumulative_strategy_return_prev'].notna())
     ]
     
     # Find entries into short positions (transition to -1)
     short_entries = df_sorted[
         (df_sorted['position'] == -1) & 
         (df_sorted['position_shift'] != -1) &
-        (df_sorted['cumulative_strategy_return'].notna())
+        (df_sorted['cumulative_strategy_return_prev'].notna())
     ]
     
     # Mark long entries with green upward triangles
     if len(long_entries) > 0:
-        ax1.scatter(long_entries['date_dt'], 
-                  long_entries['cumulative_strategy_return'] * 100,
+        ax1.scatter(long_entries['date_dt_prev'], 
+                  long_entries['cumulative_strategy_return_prev'] * 100,
                   marker='^', s=150, color='green', zorder=5, 
                   label='Long Entry', edgecolors='darkgreen', linewidths=1.5)
     
     # Mark short entries with red downward triangles
     if len(short_entries) > 0:
-        ax1.scatter(short_entries['date_dt'], 
-                  short_entries['cumulative_strategy_return'] * 100,
+        ax1.scatter(short_entries['date_dt_prev'], 
+                  short_entries['cumulative_strategy_return_prev'] * 100,
                   marker='v', s=150, color='red', zorder=5, 
                   label='Short Entry', edgecolors='darkred', linewidths=1.5)
     

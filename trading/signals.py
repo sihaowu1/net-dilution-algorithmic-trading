@@ -23,13 +23,22 @@ def compute_net_dilution(df: pd.DataFrame) -> pd.DataFrame:
 def zscore_normalize_net_dilution(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
 
-    mean = df['net_dilution'].mean()
-    std = df['net_dilution'].std()
+    # Filter out NaN values before calculating statistics to avoid warnings
+    net_dilution_clean = df['net_dilution'].dropna()
     
-    if pd.isna(std) or std == 0:
+    if len(net_dilution_clean) == 0:
+        # If all values are NaN, set normalized to 0
         df['normalized_net_dilution'] = 0.0
     else:
-        df['normalized_net_dilution'] = (df['net_dilution'] - mean) / std
+        mean = net_dilution_clean.mean()
+        std = net_dilution_clean.std()
+        
+        if pd.isna(std) or std == 0:
+            df['normalized_net_dilution'] = 0.0
+        else:
+            df['normalized_net_dilution'] = (df['net_dilution'] - mean) / std
+            # Fill NaN values with 0 after normalization
+            df['normalized_net_dilution'] = df['normalized_net_dilution'].fillna(0.0)
     
     return df
 
