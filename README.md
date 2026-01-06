@@ -2,12 +2,13 @@
 
 ## Why look into net dilution in tech companies?
 
-$$
+```math
 \text{Net Dilution}
 =
 \frac{\text{Stock-Based Compensation} - \text{Shares Repurchase}}
 {\text{Market Cap}}
-$$
+```
+
 Many companies, especially in tech, are using stock-based compensation (SBC) to attract talent. On the other hand, the company wants to keep shares so that it can decide long-term trajectory. 
 
 ## Hypothesis
@@ -18,17 +19,18 @@ So, we hypothesize that a low net dilution means the price will increase, as a l
 
 ## Backtesting Setup
 We will look at tech companies, since they may consider paying employees in SBC to be able to invest cash for growth. 
-$$
+
+```math
 \text{Expected Net Dilution}
 =
 \frac{\text{TTM Stock-Based Compensation} - \text{TTM Shares Repurchase}}
 {\text{Market Cap at signal date}}
-$$
+```
 
 The trading signal will be based on a trailing twelve month (TTM) of net dilution. Since every company is different, we will use z-score to normalize the net dilution. 
-$$
+```math
 \text{z} = \frac{\text{Expected Net Dilution} - \mu}{\sigma}
-$$
+```
 
 This strategy will long for a z-score normalized net dilution smaller than 0.05, and short for values larger than 0.25. 
 
@@ -86,3 +88,5 @@ $$
 ![image](https://raw.githubusercontent.com/sihaowu1/net-dilution-algorithmic-trading/main/trading/charts/CRM.png)
 ![image](https://raw.githubusercontent.com/sihaowu1/net-dilution-algorithmic-trading/main/trading/charts/PINS.png)
 ![image](https://raw.githubusercontent.com/sihaowu1/net-dilution-algorithmic-trading/main/trading/charts/SNAP.png)
+
+## Analysis
