@@ -140,6 +140,7 @@ def plot_performance_comparison(df, sp500_df, ticker_name):
     df_sorted['entry_cumulative_return'] = df_sorted['cumulative_strategy_return_prev'].fillna(df_sorted['cumulative_strategy_return'])
     
     # Find entries into long positions (transition to 1, or first position if it's 1)
+    is_first_row = df_sorted['position_shift'].isna()
     long_entries = df_sorted[
         (df_sorted['position'] == 1) & 
         (df_sorted['position_shift'] != 1) &
@@ -152,6 +153,22 @@ def plot_performance_comparison(df, sp500_df, ticker_name):
         (df_sorted['position_shift'] != -1) &
         (df_sorted['entry_cumulative_return'].notna())
     ]
+    
+    # Ensure mutual exclusivity: a row cannot be both long and short entry
+    # This handles edge cases where the first row might be incorrectly detected as both
+    common_indices = long_entries.index.intersection(short_entries.index)
+    if len(common_indices) > 0:
+        # For rows that appear in both, keep only the one matching the actual position
+        for idx in common_indices:
+            actual_position = df_sorted.loc[idx, 'position']
+            if actual_position == 1:
+                short_entries = short_entries.drop(idx)
+            elif actual_position == -1:
+                long_entries = long_entries.drop(idx)
+            else:
+                # If position is 0 or unexpected, remove from both
+                long_entries = long_entries.drop(idx)
+                short_entries = short_entries.drop(idx)
     
     # Mark long entries with green upward triangles
     if len(long_entries) > 0:
