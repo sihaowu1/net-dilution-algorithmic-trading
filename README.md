@@ -8,16 +8,15 @@
 {\text{Market Cap}}
 ```
 
-Many companies, especially in tech, are using stock-based compensation (SBC) to attract talent. On the other hand, the company wants to keep shares so that it can decide long-term trajectory. Net dilution measures this 
+Many companies, especially in tech, are using stock-based compensation (SBC) to attract talent. On the other hand, the company wants to keep shares so that it can decide long-term trajectory. The company can only do this if it is in a good financial position. 
 
 ## Hypothesis
-It is in a company's interest to repurchase shares from SBC. 
-A company can only repurchase shares if it is in good financial condition. 
 
 So, we hypothesize that a low net dilution means the price will increase, as a low net dilution signals strong financials. A high net dilution therefore means the price will decrease. 
 
 ## Backtesting Setup
-We will look at tech companies, since they may consider paying employees in SBC to be able to invest cash for growth. 
+
+We will look at tech companies, since they may consider paying employees in significant amounts of SBC to be able to invest cash for growth. 
 
 ```math
 \text{Expected Net Dilution}
@@ -26,7 +25,14 @@ We will look at tech companies, since they may consider paying employees in SBC 
 {\text{Market Cap at signal date}}
 ```
 
-The trading signal will be based on a trailing twelve month (TTM) of net dilution. Since every company is different, we will use z-score to normalize the net dilution. 
+The trading signal will be based on a trailing twelve month (TTM) of net dilution. We choose to use a TTM because the market cap is calculated using the point-in-time diluted shares outstanding, which is in 10-K/10-Q fillings, released usually after the company's earnings date. By using the most recent 10-K/10-Q filling and the TTM, we can estimate the net dilution and hence long/short the stock on the earnings date when it is mispriced due to missing number of shares outstanding. 
+```math
+\text{Market Cap}
+=
+{\text{Price}} \times {\text{Diluted Shares Outstanding}}
+```
+
+Since every company is different, we will use z-score to normalize the net dilution. 
 ```math
 \text{z} = \frac{\text{Expected Net Dilution} - \mu}{\sigma}
 ```
@@ -37,8 +43,10 @@ We choose a long threshold of 0.05 as this includes companies that retain stocks
 
 We choose a short threshold of 0.25 as it is large enough to be considered slightly higher than average (i.e. a company repurchase very little or no any shares). 
 
+Having a deadzone between the long and short threshold may help the strategy avoid a period of uncertainty, which can reduce  transaction costs. 
+
 ## Backtesting
-Backtesting was done on tech stocks that issue a lot of SBC. That list is:
+Backtesting was done on a few tech stocks that issue a lot of employee SBC. That list is:
 * Lyft (LYFT)
 * Uber (UBER)
 * Snowflake (SNOW)
@@ -89,10 +97,14 @@ The following steps were applied to the data:
 ![image](https://raw.githubusercontent.com/sihaowu1/net-dilution-algorithmic-trading/main/trading/charts/SNAP.png)
 
 ## Analysis
-We observe that our long threshold works successfully, but our short threshold shows some issues. The long threshold works well, as observed for Salesforce, who is a large company that aims to retain most shares. So, the long threshold of 0.05 includes that objective. We also see success for SNOW as the algorithm long for a period of significant growth. 
+We observe that our strategy trades successfully. This means that the signal is relevant. However, our thresholds may need to be adjusted for better performance. 
 
-However, a short threshold is not adequately determined, as a high net dilution can also mean a company is selling stocks to fund investments. This means we need another signal to confirm that net dilution is high due to poor financial condition, instead of allocating cash for investments. 
+We observe that our long threshold works successfully. Salesforce is a large company that aims to retain most shares, so a long threshold of 0.05 includes that objective. 
 
-We can say that the deadzone between 0.05 and 0.25 is successful as the algorithm remained neutral when SNOW dropped from 2021 Q4 to 2022 Q1. The next step would be to consider an long-only version of this strategy or quantitatively determine a short threshold. 
+However, a short threshold is not adequately determined, as a high net dilution can also mean a company issues employee SBC to be able to invest cash for investments and growth. 
 
-This strategy has a clear tradeoff that is present in sudden quarterly changes. 10-K/10-Q are released after earnings, meaning that this strategy uses the most recent 10-K/10-Q to estimate net dilution using a TTM. If there were a sudden change such as COVID, then the strategy would fail. 
+Additionally, we see that a deadzone between 0.05 and 0.25 is successful as the algorithm remained neutral when SNOW dropped from 2021 Q4 to 2022 Q1. Similarly, we see the same with Salesforce after its IPO. 
+
+This strategy has a clear disadvantage, which is large changes between quarters. This algorithm only updates every quarter, meaning it would fail if the was a sudden change between quarters. An improvement would be to track the drawdown of each stock and have a neutral position if it reached a maximum value. 
+
+Another improvement to this strategy would be to adjust the thresholds for each stock individually, as Pinterest's position was always long. 

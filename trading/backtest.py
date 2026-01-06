@@ -134,31 +134,36 @@ def plot_performance_comparison(df, sp500_df, ticker_name):
     df_sorted['cumulative_strategy_return_prev'] = df_sorted['cumulative_strategy_return'].shift(1)
     df_sorted['date_dt_prev'] = df_sorted['date_dt'].shift(1)
     
-    # Find entries into long positions (transition to 1)
+    # For first positions (where position_shift is NaN), use current period's values
+    # For subsequent positions, use previous period's values
+    df_sorted['entry_date'] = df_sorted['date_dt_prev'].fillna(df_sorted['date_dt'])
+    df_sorted['entry_cumulative_return'] = df_sorted['cumulative_strategy_return_prev'].fillna(df_sorted['cumulative_strategy_return'])
+    
+    # Find entries into long positions (transition to 1, or first position if it's 1)
     long_entries = df_sorted[
         (df_sorted['position'] == 1) & 
         (df_sorted['position_shift'] != 1) &
-        (df_sorted['cumulative_strategy_return_prev'].notna())
+        (df_sorted['entry_cumulative_return'].notna())
     ]
     
-    # Find entries into short positions (transition to -1)
+    # Find entries into short positions (transition to -1, or first position if it's -1)
     short_entries = df_sorted[
         (df_sorted['position'] == -1) & 
         (df_sorted['position_shift'] != -1) &
-        (df_sorted['cumulative_strategy_return_prev'].notna())
+        (df_sorted['entry_cumulative_return'].notna())
     ]
     
     # Mark long entries with green upward triangles
     if len(long_entries) > 0:
-        ax1.scatter(long_entries['date_dt_prev'], 
-                  long_entries['cumulative_strategy_return_prev'] * 100,
+        ax1.scatter(long_entries['entry_date'], 
+                  long_entries['entry_cumulative_return'] * 100,
                   marker='^', s=150, color='green', zorder=5, 
                   label='Long Entry', edgecolors='darkgreen', linewidths=1.5)
     
     # Mark short entries with red downward triangles
     if len(short_entries) > 0:
-        ax1.scatter(short_entries['date_dt_prev'], 
-                  short_entries['cumulative_strategy_return_prev'] * 100,
+        ax1.scatter(short_entries['entry_date'], 
+                  short_entries['entry_cumulative_return'] * 100,
                   marker='v', s=150, color='red', zorder=5, 
                   label='Short Entry', edgecolors='darkred', linewidths=1.5)
     
