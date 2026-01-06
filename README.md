@@ -58,27 +58,27 @@ For each stock, the following data is used:
 The following steps were applied to the data:
 1. Compute TTM for shares repurchase and SBC
 2. Compute market cap 
-$$
+```math
 \text{Market Cap}
 =
 {\text{Price}} \times {\text{Diluted Shares Outstanding}}
-$$
+```
 3. Compute expected net dilution
-$$
+```math
 \text{Expected Net Dilution}
 =
 \frac{\text{TTM Stock-Based Compensation} - \text{TTM Shares Repurchase}}
 {\text{Market Cap}}
-$$
+```
 4. Z-score normalize the expected net dilution. 
 5. Generate trading signals.
-$$
+```math
 \text{Position} =
 \begin{cases}
 \text{Long}, & \text{z-score normalized net dilution} \le 0.05 \\
 \text{Short}, & \text{z-score normalized net dilution} \ge 0.25
 \end{cases}
-$$
+```
 6. Plot strategy performance vs. single stock buy and hold vs. S&P500 buy and hold. 
 
 ## Results
