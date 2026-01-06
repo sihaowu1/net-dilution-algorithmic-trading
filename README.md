@@ -1,13 +1,4 @@
 # Net Dilution Algorithmic Trading
-why topic is of interest
-
-hypothesis + relevant articles / theories
-
-experiment setup, which owuld include ur like moving avg stuff, functions, threshold determining stuff
-
-how ur things were tested, how far u backtested, what data was used, where data is from, which stocks, and why for all those
-
-results, analysis, future ideas or why this was a slop
 
 ## Why look into net dilution in tech companies?
 $$
