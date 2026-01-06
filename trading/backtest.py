@@ -22,8 +22,10 @@ def calculate_strategy_returns(df, ticker_name):
     df['price_return'] = df['closing_price'].pct_change()
     
     # Calculate strategy returns (position * return)
-    # Use previous period's position to determine current period's return
-    df['strategy_return'] = df['position'].shift(1) * df['price_return']
+    # Use current period's position to determine current period's return
+    # When position = 1 (long): profit when price goes up
+    # When position = -1 (short): profit when price goes down
+    df['strategy_return'] = df['position'] * df['price_return']
     
     # Calculate cumulative returns
     df['cumulative_market_return'] = (1 + df['price_return']).cumprod() - 1

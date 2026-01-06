@@ -1,4 +1,13 @@
 # Net Dilution Algorithmic Trading
+why topic is of interest
+
+hypothesis + relevant articles / theories
+
+experiment setup, which owuld include ur like moving avg stuff, functions, threshold determining stuff
+
+how ur things were tested, how far u backtested, what data was used, where data is from, which stocks, and why for all those
+
+results, analysis, future ideas or why this was a slop
 
 ## Why look into net dilution in tech companies?
 
@@ -9,7 +18,7 @@
 {\text{Market Cap}}
 ```
 
-Many companies, especially in tech, are using stock-based compensation (SBC) to attract talent. On the other hand, the company wants to keep shares so that it can decide long-term trajectory. 
+Many companies, especially in tech, are using stock-based compensation (SBC) to attract talent. On the other hand, the company wants to keep shares so that it can decide long-term trajectory. Net dilution measures this 
 
 ## Hypothesis
 It is in a company's interest to repurchase shares from SBC. 
@@ -36,7 +45,7 @@ This strategy will long for a z-score normalized net dilution smaller than 0.05,
 
 We choose a long threshold of 0.05 as this includes companies that retain stocks that are meaningly non-dilutive. If we choose to exclude this, we would take a long threshold of -0.25, which is net dilution slightly lower than average. 
 
-We choose a short threshold of 0.25 as it is large enough to be considered slightly higher than average (i.e. a company repurchase very little or no any shares).
+We choose a short threshold of 0.25 as it is large enough to be considered slightly higher than average (i.e. a company repurchase very little or no any shares). 
 
 ## Backtesting
 Backtesting was done on tech stocks that issue a lot of SBC. That list is:
@@ -90,3 +99,8 @@ The following steps were applied to the data:
 ![image](https://raw.githubusercontent.com/sihaowu1/net-dilution-algorithmic-trading/main/trading/charts/SNAP.png)
 
 ## Analysis
+We observe that our long threshold works successfully, but our short threshold shows some issues. The long threshold works well, as observed for Salesforce, who is a large company that aims to retain most shares. So, the long threshold of 0.05 includes that objective. We also see success for SNOW as the algorithm long for a period of significant growth. 
+
+However, a short threshold is not adequately determined, as a high net dilution can also mean a company is selling stocks to fund investments. This means we need another signal to confirm that net dilution is high due to poor financial condition, instead of allocating cash for investments. 
+
+We can say that the deadzone between 0.05 and 0.25 is successful as the algorithm remained neutral when SNOW dropped from 2021 Q4 to 2022 Q1. The next step would be to consider an long-only version of this strategy or adjust the short threshold. 
