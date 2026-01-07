@@ -8,7 +8,7 @@
 {\text{Market Cap}}
 ```
 
-Many companies, especially in tech, are using stock-based compensation (SBC) to attract talent. On the other hand, the company wants to keep shares so that it can decide long-term trajectory. The company can only do this if it is in a good financial position. 
+Many tech companies are issuing significant shares as part of employees' stock-based compensation (SBC) to attact and retain talent. On the other hand, the company wants to keep shares so that it can decide long-term trajectory. The company can only do this if it is in a good financial position. So, net dilution is a relevant signal for financial health. 
 
 ## Hypothesis
 
@@ -16,7 +16,9 @@ So, we hypothesize that a low net dilution means the price will increase, as a l
 
 ## Backtesting Setup
 
-We will look at tech companies, since they may consider paying employees in significant amounts of SBC to be able to invest cash for growth. 
+We will only consider mid-cap tech companies. Large-cap have enough revenue to repurchase most shares, and small-cap heavily rely on SBC to invest revenue into the company's growth. 
+
+Backtests will be for individual stocks, from their IPO to 2025 Q4. This is preferable over choosing a period to backtest, as this strategy updates every quarter. Hence, we would have less data to confirm the strategy works. 
 
 ```math
 \text{Expected Net Dilution}
@@ -25,7 +27,10 @@ We will look at tech companies, since they may consider paying employees in sign
 {\text{Market Cap at signal date}}
 ```
 
-The trading signal will be based on a trailing twelve month (TTM) of net dilution. We choose to use a TTM because the market cap is calculated using the point-in-time diluted shares outstanding, which is in 10-K/10-Q fillings, released usually after the company's earnings date. By using the most recent 10-K/10-Q filling and the TTM, we can estimate the net dilution and hence long/short the stock on the earnings date when it is mispriced due to missing number of shares outstanding. 
+The trading signal will be based on a trailing twelve month (TTM) of net dilution. 
+
+We choose to use a TTM because the market cap is calculated using the point-in-time diluted shares outstanding, which is in 10-K/10-Q fillings, released usually after the company's earnings date. By using the most recent 10-K/10-Q filling and the TTM, we can estimate the net dilution and hence long/short the stock on the earnings date when it is mispriced due to missing number of shares outstanding. 
+
 ```math
 \text{Market Cap}
 =
@@ -46,15 +51,16 @@ We choose a short threshold of 0.25 as it is large enough to be considered sligh
 Having a deadzone between the long and short threshold may help the strategy avoid a period of uncertainty, which can reduce  transaction costs. 
 
 ## Backtesting
-Backtesting was done on a few tech stocks that issue a lot of employee SBC. That list is:
+The backtest will be done on:
 * Lyft (LYFT)
 * Uber (UBER)
 * Snowflake (SNOW)
 * Salesforce (CRM)
 * Pinterest (PINS)
 * Snapchat (SNAP)
-
-Backtests were performed on individual stocks starting from their IPO to the last quarter of 2025. This is more relevant than testing a selected period of a stock as that period may reflect extremes of good and bad financial condition, which will cause our algorithm to only long or only short. This would be irrelevant to showing its effectiveness. 
+* MangoDB (MDB)
+* Roku (ROKU)
+* Confluent (CFLT)
 
 For each stock, the following data is used:
 * Closing prices, from Yahoo Finance
@@ -95,16 +101,17 @@ The following steps were applied to the data:
 ![image](https://raw.githubusercontent.com/sihaowu1/net-dilution-algorithmic-trading/main/trading/charts/CRM.png)
 ![image](https://raw.githubusercontent.com/sihaowu1/net-dilution-algorithmic-trading/main/trading/charts/PINS.png)
 ![image](https://raw.githubusercontent.com/sihaowu1/net-dilution-algorithmic-trading/main/trading/charts/SNAP.png)
+![image](https://raw.githubusercontent.com/sihaowu1/net-dilution-algorithmic-trading/main/trading/charts/MDB.png)
+![image](https://raw.githubusercontent.com/sihaowu1/net-dilution-algorithmic-trading/main/trading/charts/ROKU.png)
+![image](https://raw.githubusercontent.com/sihaowu1/net-dilution-algorithmic-trading/main/trading/charts/CFLT.png)
 
 ## Analysis
 We observe that our strategy trades successfully. This means that the signal is relevant. However, our thresholds may need to be adjusted for better performance. 
 
-We observe that our long threshold works successfully. Salesforce is a large company that aims to retain most shares, so a long threshold of 0.05 includes that objective. 
-
 However, a short threshold is not adequately determined, as a high net dilution can also mean a company issues employee SBC to be able to invest cash for investments and growth. 
 
-Additionally, we see that a deadzone between 0.05 and 0.25 is successful as the algorithm remained neutral when SNOW dropped from 2021 Q4 to 2022 Q1. Similarly, we see the same with Salesforce after its IPO. 
+Additionally, we see that a deadzone between 0.05 and 0.25 is successful as the algorithm remained neutral when SNOW dropped from 2021 Q4 to 2022 Q1. Similarly, we see the same with Salesforce after its IPO, and Uber from 2022 Q1 to 2022 Q3. 
 
-This strategy has a clear disadvantage, which is large changes between quarters. This algorithm only updates every quarter, meaning it would fail if the was a sudden change between quarters. An improvement would be to track the drawdown of each stock and have a neutral position if it reached a maximum value. 
+This strategy has a clear disadvantage: it updates every quarter. So, it cannot react between quarters. An improvement would be to track the drawdown of each stock and have a neutral position if it reached a maximum value between quarters. 
 
-Another improvement to this strategy would be to adjust the thresholds for each stock individually, as Pinterest's position was always long. 
+Another improvement to this strategy would be to adjust the thresholds for each stock individually, as Pinterest's and Confluent's positions were always long. 
