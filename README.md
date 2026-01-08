@@ -95,6 +95,13 @@ The following steps were applied to the data:
 6. Plot strategy performance vs. single stock buy and hold vs. S&P500 buy and hold. 
 
 ## Results
+The graph belows represent the strategy's performance from their IPO to 2025 Q4. There are several elements on them:
+* Orange Line: buy and hold for that specific stock
+* Blue Line: our strategy (note: it is not visible when it coincides with the orange line)
+* Green Line: S&P500 buy and hold
+* Dotted Line: hold cash
+* Trade Indicators: indicates when our strategy will long or short the stock, same as the bar graph on the right
+
 ![image](https://raw.githubusercontent.com/sihaowu1/net-dilution-algorithmic-trading/main/trading/charts/LYFT.png)
 ![image](https://raw.githubusercontent.com/sihaowu1/net-dilution-algorithmic-trading/main/trading/charts/UBER.png)
 ![image](https://raw.githubusercontent.com/sihaowu1/net-dilution-algorithmic-trading/main/trading/charts/SNOW.png)
