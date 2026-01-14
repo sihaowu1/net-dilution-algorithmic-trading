@@ -126,6 +126,30 @@ def plot_performance_comparison(df, sp500_df, ticker_name):
     # Plot S&P 500 returns
     ax1.plot(sp500_df['date_dt'], sp500_df['sp500_cumulative_return'] * 100, 
             linewidth=2, label='S&P 500', alpha=0.8)
+
+    # Calculate outperformance vs buy & hold and S&P 500
+    strategy_final = df['cumulative_strategy_return'].dropna().iloc[-1]
+    market_final = df['cumulative_market_return'].dropna().iloc[-1]
+    sp500_final = sp500_df['sp500_cumulative_return'].dropna().iloc[-1]
+
+    out_vs_market = (strategy_final - market_final) * 100
+    out_vs_sp500 = (strategy_final - sp500_final) * 100
+
+    outperformance_text = (
+        "Outperformance\n"
+        f"vs Buy & Hold: {out_vs_market:+.2f}%\n"
+        f"vs S&P 500: {out_vs_sp500:+.2f}%"
+    )
+
+    ax1.text(
+        0.02,
+        0.98,
+        outperformance_text,
+        transform=ax1.transAxes,
+        fontsize=11,
+        verticalalignment='top',
+        bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.85, edgecolor='gray')
+    )
     
     # Detect position changes and mark long/short entries
     df_sorted = df.sort_values('date_dt').reset_index(drop=True)
